@@ -13,10 +13,12 @@ The hardware version of the `magic wand` demo also requires a [PmodACL](https://
 
 Clone the repository and submodules:
 ```bash
-git clone https://github.com/antmicro/litex-vexriscv-tensorflow-lite-demo
-cd litex-vexriscv-tensorflow-lite-demo
+git clone https://github.com/fintros/swervolf-nexys-a7-tensorflow-lite-demo.git
+cd swervolf-nexys-a7-tensorflow-lite-demo
 DEMO_HOME=`pwd`
+SWERVOLF_ROOT=`pwd`/swervolf
 git submodule update --init --recursive
+cd 
 ```
 
 Install prerequisites (tested on Ubuntu 18.04):
