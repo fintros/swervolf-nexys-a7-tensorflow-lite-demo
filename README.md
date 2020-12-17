@@ -45,131 +45,54 @@ export ZEPHYR_SDK_INSTALL_DIR=/opt/zephyr-sdk
 
 ## Building the demos
 
+### Cleaning project
+
+```bash
+export swervolf-nexys-a7-tensorflow-lite-dem
+make -f tensorflow/lite/micro/tools/make/Makefile TARGET=zephyr_swervolf BUILD_T
+```
+
 ### Hello World demo
 
 Build the `Hello World` demo with:
 ```bash
+cd $DEMO_HOME
+export SWERVOLF_ROOT=swervolf
 cd $DEMO_HOME/tensorflow
-make -f tensorflow/lite/micro/tools/make/Makefile TARGET=zephyr_vexriscv hello_world_bin
+make -f tensorflow/lite/micro/tools/make/Makefile TARGET=zephyr_swervolf BUILD_TYPE=debug hello_world_bin $*
 ```
 The resulting binaries can be found in the `tensorflow/lite/micro/tools/make/gen/zephyr_vexriscv_x86_64/hello_world/build/zephyr` folder.
+
+To run debug:
+````bash
+export PATH=$PATH:/home/tensorflow/alsp/riscv-fw-infrastructure/WD-Firmware/demo/build/toolchain/gcc/bin
+riscv64-unknown-elf-gdb /home/tensorflow/alsp/swervolf-nexys-a7-tensorflow-lite-demo/tensorflow/tensorflow/lite/micro/tools/make/gen/zephyr_swervolf_x86_64/hello_world/build/
+````
 
 ### Magic Wand demo
 
 Build the `Magic Wand` demo with:
 ```bash
+cd $DEMO_HOME
+export SWERVOLF_ROOT=swervolf
 cd $DEMO_HOME/tensorflow
-make -f tensorflow/lite/micro/tools/make/Makefile TARGET=zephyr_vexriscv magic_wand_bin
+make -f tensorflow/lite/micro/tools/make/Makefile TARGET=zephyr_swervolf BUILD_TYPE=debug magic_wand_bin $*
 ```
 The resulting binaries can be found in the `tensorflow/lite/micro/tools/make/gen/zephyr_vexriscv_x86_64/magic_wand/build/zephyr` folder.
 
+To run debug:
+````bash
+export PATH=$PATH:/home/tensorflow/alsp/riscv-fw-infrastructure/WD-Firmware/demo/build/toolchain/gcc/bin
+riscv64-unknown-elf-gdb /home/tensorflow/alsp/swervolf-nexys-a7-tensorflow-lite-demo/tensorflow/tensorflow/lite/micro/tools/make/gen/zephyr_swervolf_x86_64/magic_wand/build/z
+````
+
 ## Building the gateware
 
-Note: For this section, if you have not already updated your udev rules, follow the instructions at "[Download & setup udev rules](https://github.com/timvideos/litex-buildenv/wiki/HowTo-LCA2018-FPGA-Miniconf#download--setup-udev-rules)" -- you probably won't need to reboot.
-
-The FPGA bitstream (gateware) can be built using [Litex Build Environment](https://github.com/timvideos/litex-buildenv).
-Building the gateware currently requires Xilinx's FPGA tooling, Vivado, to be installed in the system.
-
-Build the gateware with:
-```bash
-cd $DEMO_HOME/litex-buildenv
-
-# Some of LiteX Buildenv's scritps have problems when running in a git repository in detached state.
-# Let's create a fake branch to avoid build errors.
-git checkout -b tf_demo
-
-export CPU=vexriscv
-export CPU_VARIANT=full
-export PLATFORM=arty
-export FIRMWARE=zephyr
-export TARGET=tf
-
-./scripts/download-env.sh
-source scripts/enter-env.sh
-
-make gateware
-```
-
-Once you have synthesized the gateware, load it onto the FPGA with:
-
-```bash
-make gateware-load
-```
-
-With the FPGA programmed, you can load the Zephyr binary on the device using the flterm program provided inside the environment you just initialized above:
-
-```bash
-cd $DEMO_HOME/tensorflow
-flterm --port=/dev/ttyUSB1 --kernel=tensorflow/lite/micro/tools/make/gen/zephyr_vexriscv_x86_64/magic_wand/build/zephyr/zephyr.bin --speed=115200
-```
-
-See the [Litex Build Environment Wiki](https://github.com/timvideos/litex-buildenv/wiki/Getting-Started) for more available options.
-
-## Simulating in Renode
-
-The `renode` directory contains all necessary scripts and assets required to simulate the `Magic Wand` demo.
-
-Install Renode as [detailed in its README file](https://github.com/renode/renode/blob/master/README.rst#installation).
-
-Build the `Magic Wand` demo as described [in the section above](#magic-wand-demo) or use a prebuilt binary from the `binares/magic_wand` directory.
-
-Now you should have everything to run the simulation using the locally built binary:
-```bash
-cd $DEMO_HOME/renode
-renode -e "s @litex-vexriscv-tflite.resc"
-```
-
-Or using the prebuilt one: 
-```bash
-cd $DEMO_HOME/renode
-renode -e "set zephyr_elf @../binaries/magic_wand/zephyr.elf; s @litex-vexriscv-tflite.resc"
-```
-
-You should see the following output on the UART (which will open as a separate terminal in Renode automatically):
-```
-*** Booting Zephyr OS build 0.6.0-86741-g626bb2c4d0bd  ***
-4 bytes lost due to alignment. To avoid this loss, please make sure the tensor_arena is 16 bytes aligned.
-Got accelerometer, label: accel-0
-
-RING:
-          *
-       *     *
-     *         *
-    *           *
-     *         *
-       *     *
-          *
-
-SLOPE:
-        *
-       *
-      *
-     *
-    *
-   *
-  *
- * * * * * * * *
-
-RING:
-          *
-       *     *
-     *         *
-    *           *
-     *         *
-       *     *
-          *
-
-SLOPE:
-        *
-       *
-      *
-     *
-    *
-   *
-  *
- * * * * * * * * 
-```
-
-In order to exit Renode, type `quit` in Monitor (the window with the Renode logo and `(machine-0)` prompt).
-
-Refer to the [Renode documentation](https://renode.readthedocs.org) for details on how to use Renode to implement more complex usage scenarios, and use its advanced debug capabilities, or set up CI testing your ML-oriented system. If you need commercial support, please contact us at [support@renode.io](mailto:support@renode.io).
+Download and unpack to $DEMO_HOME: https://static.dev.sifive.com/dev-tools/riscv64-unknown-elf-gcc-8.1.0-2019.01.0-x86_64-linux-ubuntu14.tar.gz
+Install Vivado (example is for Vivado 2019.2)
+````bash
+export WORKSPACE=$(pwd)
+export SWERVOLF_ROOT=$WORKSPACE/swervolf
+source $VIVADO_PATH/Vivado/2019.2/.settings64-Vivado.sh
+export PATH=$PATH:$PWD/riscv64-unknown-elf-gcc-8.1.0-2019.01.0-x86_64-linux-ubuntu14/bin/
+````
