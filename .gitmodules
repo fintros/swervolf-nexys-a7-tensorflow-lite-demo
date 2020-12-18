@@ -1,9 +1,9 @@
 [submodule "tensorflow"]
 	path = tensorflow
 	url = https://github.com/fintros/tensorflow.git
-[submodule "swervolf"]
-	path = swervolf
+[submodule "fusesoc_libraries/Cores-SweRVolf"]
+	path = fusesoc_libraries/Cores-SweRVolf
 	url = https://github.com/fintros/Cores-SweRVolf.git
-[submodule "fusesoc-cores"]
-	path = fusesoc-cores
+[submodule "fusesoc_libraries/fusesoc-cores"]
+	path = fusesoc_libraries/fusesoc-cores
 	url = https://github.com/fusesoc/fusesoc-cores
