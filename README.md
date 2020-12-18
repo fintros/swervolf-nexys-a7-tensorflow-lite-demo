@@ -16,7 +16,7 @@ Clone the repository and submodules:
 git clone https://github.com/fintros/swervolf-nexys-a7-tensorflow-lite-demo.git
 cd swervolf-nexys-a7-tensorflow-lite-demo
 DEMO_HOME=`pwd`
-SWERVOLF_ROOT=`pwd`/swervolf
+SWERVOLF_ROOT=`pwd`/fusesoc_libraries/swervolf
 git submodule update --init --recursive
 cd 
 ```
@@ -43,13 +43,32 @@ export ZEPHYR_TOOLCHAIN_VARIANT=zephyr
 export ZEPHYR_SDK_INSTALL_DIR=/opt/zephyr-sdk
 ```
 
+### Prerequisites
+
+Install the RISC-V-specific version of OpenOCD
+
+    git clone https://github.com/riscv/riscv-openocd
+    cd riscv-openocd
+    ./bootstrap
+    ./configure --enable-jtag_vpi --enable-ftdi
+    make
+    sudo make install
+    
+Connect to debugger:
+
+````bash
+openocd -f $SWERVOLF_ROOT/data/swervolf_nexys_program.cfg
+````
+
 ## Building the demos
 
 ### Cleaning project
 
 ```bash
-export swervolf-nexys-a7-tensorflow-lite-dem
-make -f tensorflow/lite/micro/tools/make/Makefile TARGET=zephyr_swervolf BUILD_T
+cd $DEMO_HOME
+export SWERVOLF_ROOT
+make -f tensorflow/lite/micro/tools/make/Makefile TARGET=zephyr_swervolf BUILD_TYPE=debug clean
+make -f tensorflow/lite/micro/tools/make/Makefile TARGET=zephyr_swervolf BUILD_TYPE=release clean
 ```
 
 ### Hello World demo
@@ -57,42 +76,30 @@ make -f tensorflow/lite/micro/tools/make/Makefile TARGET=zephyr_swervolf BUILD_T
 Build the `Hello World` demo with:
 ```bash
 cd $DEMO_HOME
-export SWERVOLF_ROOT=swervolf
-cd $DEMO_HOME/tensorflow
-make -f tensorflow/lite/micro/tools/make/Makefile TARGET=zephyr_swervolf BUILD_TYPE=debug hello_world_bin $*
+cd tensorflow
+make -f tensorflow/lite/micro/tools/make/Makefile TARGET=zephyr_swervolf BUILD_TYPE=debug hello_world_bin
 ```
 The resulting binaries can be found in the `tensorflow/lite/micro/tools/make/gen/zephyr_vexriscv_x86_64/hello_world/build/zephyr` folder.
-
-To run debug:
-````bash
-export PATH=$PATH:/home/tensorflow/alsp/riscv-fw-infrastructure/WD-Firmware/demo/build/toolchain/gcc/bin
-riscv64-unknown-elf-gdb /home/tensorflow/alsp/swervolf-nexys-a7-tensorflow-lite-demo/tensorflow/tensorflow/lite/micro/tools/make/gen/zephyr_swervolf_x86_64/hello_world/build/
-````
 
 ### Magic Wand demo
 
 Build the `Magic Wand` demo with:
 ```bash
 cd $DEMO_HOME
-export SWERVOLF_ROOT=swervolf
-cd $DEMO_HOME/tensorflow
-make -f tensorflow/lite/micro/tools/make/Makefile TARGET=zephyr_swervolf BUILD_TYPE=debug magic_wand_bin $*
+cd tensorflow
+make -f tensorflow/lite/micro/tools/make/Makefile TARGET=zephyr_swervolf BUILD_TYPE=debug magic_wand_bin
 ```
 The resulting binaries can be found in the `tensorflow/lite/micro/tools/make/gen/zephyr_vexriscv_x86_64/magic_wand/build/zephyr` folder.
 
-To run debug:
-````bash
-export PATH=$PATH:/home/tensorflow/alsp/riscv-fw-infrastructure/WD-Firmware/demo/build/toolchain/gcc/bin
-riscv64-unknown-elf-gdb /home/tensorflow/alsp/swervolf-nexys-a7-tensorflow-lite-demo/tensorflow/tensorflow/lite/micro/tools/make/gen/zephyr_swervolf_x86_64/magic_wand/build/z
-````
-
 ## Building the gateware
-
-Download and unpack to $DEMO_HOME: https://static.dev.sifive.com/dev-tools/riscv64-unknown-elf-gcc-8.1.0-2019.01.0-x86_64-linux-ubuntu14.tar.gz
-Install Vivado (example is for Vivado 2019.2)
+Needed once:
 ````bash
-export WORKSPACE=$(pwd)
-export SWERVOLF_ROOT=$WORKSPACE/swervolf
-source $VIVADO_PATH/Vivado/2019.2/.settings64-Vivado.sh
-export PATH=$PATH:$PWD/riscv64-unknown-elf-gcc-8.1.0-2019.01.0-x86_64-linux-ubuntu14/bin/
+pip install fusesoc
+````
+Install Vivado (example is for Vivado 2019.2)
+
+````bash
+cd $DEMO_HOME
+source /home/tensorflow/Xilinx/Vivado/2019.2/.settings64-Vivado.sh
+fusesoc run --target=nexys_a7 swervolf --bootrom_file=$SWERVOLF_ROOT/sw/acceltest.vh
 ````
